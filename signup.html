@@ -1,0 +1,257 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <title>Sign Up - UniVENT</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <style>
+    :root {
+      --primary-color: #FF8C00;
+      --primary-hover: #E67E00;
+      --error-color: #e74c3c;
+      --text-color: #333;
+      --light-text: #555;
+      --border-color: #ddd;
+      --bg-overlay: rgba(255, 248, 225, 0.9);
+      --white: #ffffff;
+      --box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      --transition: all 0.3s ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body {
+      background: url('https://images.unsplash.com/photo-1733835085968-d586d44a31da?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fHx8fA%3D%3D') no-repeat center center fixed;
+      background-size: cover;
+      color: var(--text-color);
+      min-height: 100vh;
+    }
+
+    #wrapper {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    /* Header */
+    #header {
+      padding: 1rem 2rem;
+      background-color: var(--bg-overlay);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    #header h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #111;
+      text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.4);
+    }
+
+    #header h1 a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    /* Form Layout */
+    .signup-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+
+    .signup-form {
+      width: 100%;
+      max-width: 550px;
+      background-color: var(--bg-overlay);
+      padding: 2.5rem;
+      border-radius: 12px;
+      box-shadow: var(--box-shadow);
+    }
+
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      color: var(--primary-color);
+      text-decoration: none;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .back-button i {
+      margin-right: 5px;
+    }
+
+    .back-button:hover {
+      color: var(--primary-hover);
+    }
+
+    .signup-form h2 {
+      font-size: 1.8rem;
+      margin-bottom: 10px;
+      color: var(--primary-color);
+      text-align: center;
+    }
+
+    .signup-form p {
+      margin-bottom: 30px;
+      text-align: center;
+      color: #555;
+    }
+
+    .field {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      padding: 0.9rem;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 1rem;
+      transition: var(--transition);
+    }
+
+    input:focus {
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(255, 140, 0, 0.15);
+      outline: none;
+    }
+
+    input[type="submit"] {
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 1rem;
+      font-size: 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      width: 100%;
+      font-weight: 600;
+      transition: var(--transition);
+      margin-top: 10px;
+    }
+
+    input[type="submit"]:hover {
+      background-color: var(--primary-hover);
+      transform: translateY(-2px);
+    }
+
+    .login-link {
+      margin-top: 20px;
+      text-align: center;
+      color: #555;
+    }
+
+    .login-link a {
+      color: var(--primary-color);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .login-link a:hover {
+      text-decoration: underline;
+    }
+
+    ul.actions {
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+    }
+
+    ul.actions li {
+      width: 100%;
+    }
+
+    @media (max-width: 600px) {
+      .signup-form {
+        padding: 2rem 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body class="signup-page">
+  <div id="wrapper">
+    <header id="header">
+      <h1><a href="#">UniVENT</a></h1>
+    </header>
+
+    <div class="signup-container">
+      <section class="signup-form">
+        
+
+        <h2>Create Your Account</h2>
+        <p>Join the campus community today!</p>
+
+        <form action="auth/submit-users-form.php" method="POST">
+          <div class="field">
+            <label for="firstname">First Name</label>
+            <input type="text" name="firstname" id="firstname" required />
+          </div>
+
+          <div class="field">
+            <label for="lastname">Last Name</label>
+            <input type="text" name="lastname" id="lastname" required />
+          </div>
+
+          <div class="field">
+            <label for="email">University Email</label>
+            <input type="email" name="email" id="email" required />
+          </div>
+
+          <div class="field">
+            <label for="password">Password</label>
+            <input type="password" name="password" id="password" required />
+          </div>
+
+          <div class="field">
+            <label for="confirm-password">Confirm Password</label>
+            <input type="password" name="confirm-password" id="confirm-password" required />
+          </div>
+
+          <div class="field">
+            <label for="StudentID">Student ID</label>
+            <input type="text" name="StudentID" id="StudentID" required />
+          </div>
+
+          <ul class="actions">
+            <li><input type="submit" value="Sign Up" class="primary large" /></li>
+          </ul>
+        </form>
+
+        <div class="login-link">
+          Already have an account? <a href="login.html">Log in</a>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // Validate matching passwords
+    document.querySelector('form').addEventListener('submit', function(e) {
+      const pass = document.getElementById('password').value;
+      const confirm = document.getElementById('confirm-password').value;
+      if (pass !== confirm) {
+        e.preventDefault();
+        alert('Passwords do not match!');
+      }
+    });
+  </script>
+</body>
+</html>
