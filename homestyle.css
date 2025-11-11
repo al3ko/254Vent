@@ -1,0 +1,153 @@
+/* General Styles */
+* { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+body { background:#001f3f; color:#fff; line-height:1.6; }
+
+/* Header and Navbar */
+header {
+    background: #90ee90;
+    padding: 0.3rem 1.5rem;  /* reduced padding for smaller navbar */
+    border-radius: 25px;     /* more rounded edges */
+    margin: 1rem;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+nav .logo {
+    font-size: 1.8rem;       /* slightly smaller logo */
+    font-weight: bold;
+    color: #fff;
+}
+
+nav .nav-links {
+    display: flex;
+    gap: 0.8rem;             /* smaller gap between links */
+}
+
+nav .nav-links a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+nav .nav-links a:hover {
+    text-decoration: underline;
+}
+
+
+/* Animated Upcoming Events Title */
+.animated-title {
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    font-style: italic;
+    text-align:center;
+    font-size:2rem;
+    font-weight:bold;
+    color:#ffffff;
+    margin:1.5rem 0;
+    animation: pulse 4s infinite;
+}
+@keyframes pulse {
+    0%, 100% { transform: translateY(0); color:#32cd32; }
+    50% { transform: translateY(-10px); color:#ffff00; }
+}
+
+/* Event Grid */
+.events-container {
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:1.5rem;
+    max-width:1200px;
+    margin:0 auto 2rem auto;
+    padding:0 1rem;
+}
+
+/* Event Cards */
+.event-card {
+    background:#fff8e1; /* Creamy background */
+    border-radius:0; /* Sharp edges */
+    overflow:hidden;
+    cursor:pointer;
+    transition:all 0.3s ease;
+    display:flex;
+    flex-direction:column;
+    height:220px; /* small height to fit 6 per page */
+    position:relative;
+}
+.event-card:hover { transform:translateY(-3px); box-shadow:0 5px 15px rgba(0,0,0,0.15); }
+
+.event-card img { width:100%; height:130px; object-fit:cover; }
+.event-details { padding:0.5rem 1rem; flex:1; display:flex; flex-direction:column; }
+.event-title { font-size:1rem; font-weight:700; color:#2d5016; margin-bottom:0.3rem; }
+.event-description {
+    font-size:0.85rem; color:#555; overflow:hidden; text-overflow:ellipsis;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+}
+
+/* Modal Styles */
+.modal {
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.7);
+    z-index:1000;
+    justify-content:center;
+    align-items:center;
+    animation:fadeInBackground 0.3s ease-in-out;
+}
+@keyframes fadeInBackground {
+    from { background: rgba(0,0,0,0); } 
+    to { background: rgba(0,0,0,0.7); }
+}
+
+.modal-content {
+    background:#fff8e1;
+    max-width:800px; width:90%;
+    border-radius:12px;
+    overflow-y:auto;
+    max-height:90vh;
+    padding:1rem 1.5rem;
+    position:relative;
+    transform:scale(0.7);
+    opacity:0;
+    animation:modalPop 0.3s forwards;
+}
+@keyframes modalPop {
+    0% { transform:scale(0.7); opacity:0; }
+    60% { transform:scale(1.05); opacity:1; }
+    100% { transform:scale(1); opacity:1; }
+}
+
+.close-modal {
+    position:absolute;
+    top:10px; right:10px;
+    background:#e74c3c;
+    color:#fff;
+    border:none; width:35px; height:35px;
+    border-radius:50%;
+    font-size:1.2rem;
+    cursor:pointer;
+    z-index:1001;
+}
+
+/* Event details in modal */
+.modal-image { width:100%; max-height:300px; object-fit:cover; margin-bottom:1rem; }
+.modal-title { font-size:1.5rem; font-weight:700; color:#2d5016; margin-bottom:0.5rem; }
+.modal-description { font-size:1rem; color:#555; margin-bottom:1rem; line-height:1.5; }
+.modal-info { font-size:0.9rem; color:#444; margin-bottom:0.5rem; }
+
+.register-btn, .unregister-btn {
+    padding:0.5rem 1rem; border:none; border-radius:4px; font-weight:600; cursor:pointer; margin-top:0.5rem;
+}
+.register-btn { background:#28a745; color:#fff; }
+.register-btn:hover { background:#1c7430; }
+.unregister-btn { background:#e74c3c; color:#fff; }
+.unregister-btn:hover { background:#c0392b; }
+
+/* Responsive */
+@media(max-width:1024px){ .events-container { grid-template-columns:repeat(2,1fr); } }
+@media(max-width:768px){ .events-container { grid-template-columns:1fr; } }
