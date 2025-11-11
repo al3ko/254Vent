@@ -92,3 +92,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     echo "Method not allowed. Use POST.";
     error_log("[WARNING] Invalid request method: " . $_SERVER['REQUEST_METHOD']);
 }
+
