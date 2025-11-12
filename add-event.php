@@ -1,9 +1,5 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_email']) || !$_SESSION['is_admin']) {
-    header("Location: login.html");
-    exit();
-}
 
 $conn = mysqli_connect("localhost", "root", "QWE123!@#qwe", "univent", 3307);
 if (!$conn) {
