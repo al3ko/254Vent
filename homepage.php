@@ -1,16 +1,32 @@
 <?php
 session_start();
-$conn = mysqli_connect("localhost", "root", "QWE123!@#qwe", "univent", 3307);
+$conn = mysqli_connect("localhost","root","QWE123!@#qwe","univent",3307);
 if(!$conn) die("Connection failed: ".mysqli_connect_error());
 $user_id = $_SESSION['user_id'] ?? 0;
 
-// Fetch 6 events
+$success_message = '';
+$error_message = '';
+
+// Handle registration/unregistration
+if(isset($_POST['action'], $_POST['event_id'])){
+    $event_id = (int)$_POST['event_id'];
+    if($_POST['action']==='register'){
+        $stmt = $conn->prepare("INSERT INTO event_registrations (event_id,user_id) VALUES (?,?)");
+        $stmt->bind_param("ii",$event_id,$user_id);
+        $success_message = $stmt->execute() ? "Successfully registered!" : "Error registering!";
+        $stmt->close();
+    } elseif($_POST['action']==='unregister'){
+        $stmt = $conn->prepare("DELETE FROM event_registrations WHERE event_id=? AND user_id=?");
+        $stmt->bind_param("ii",$event_id,$user_id);
+        $success_message = $stmt->execute() ? "Successfully unregistered!" : "Error unregistering!";
+        $stmt->close();
+    }
+}
+
 $events_query = "SELECT e.*, 
                     (SELECT COUNT(*) FROM event_registrations WHERE event_id = e.event_id) as attendee_count,
                     (SELECT COUNT(*) FROM event_registrations WHERE event_id = e.event_id AND user_id = ?) as is_registered
-                 FROM events e
-                 ORDER BY e.start_date DESC
-                 LIMIT 6";
+                 FROM events e ORDER BY e.start_date DESC";
 $stmt = $conn->prepare($events_query);
 $stmt->bind_param("i",$user_id);
 $stmt->execute();
@@ -39,39 +55,32 @@ $stmt->close();
     </nav>
 </header>
 
+<?php if($success_message): ?>
+    <div class="success-message" id="successMessage"><?php echo $success_message; ?></div>
+<?php endif; ?>
+
 <div class="animated-title">Upcoming Events</div>
 
 <div class="events-container">
 <?php if($events_result->num_rows>0): ?>
     <?php while($event=$events_result->fetch_assoc()): ?>
-        <div class="event-card" onclick="openModal(<?php echo $event['event_id']; ?>)">
+        <div class="event-card" onclick="showEventDetails(<?php echo htmlspecialchars(json_encode($event)); ?>)">
             <?php if(!empty($event['image_path'])): ?>
                 <img src="<?php echo htmlspecialchars($event['image_path']); ?>" alt="<?php echo htmlspecialchars($event['title']); ?>">
-            <?php else: ?>
-                <div style="height:130px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;color:#999;">
-                    <i class="fas fa-calendar-alt" style="font-size:2rem;"></i>
-                </div>
             <?php endif; ?>
             <div class="event-details">
                 <h3 class="event-title"><?php echo htmlspecialchars($event['title']); ?></h3>
-                <p class="event-description"><?php echo nl2br(htmlspecialchars($event['description'])); ?></p>
+                <p class="event-info"><i class="fas fa-clock"></i> <?php echo date('g:i A',strtotime($event['start_date'])); ?></p>
+                <p class="event-info"><i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($event['venue']); ?></p>
+                <form method="POST">
+                    <input type="hidden" name="event_id" value="<?php echo $event['event_id']; ?>">
+                    <?php if($event['is_registered']): ?>
+                        <button type="submit" name="action" value="unregister" class="unregister-btn">Unregister</button>
+                    <?php else: ?>
+                        <button type="submit" name="action" value="register" class="register-btn">Register</button>
+                    <?php endif; ?>
+                </form>
             </div>
-        </div>
-
-        <!-- Hidden full event for modal -->
-        <div id="event-detail-<?php echo $event['event_id']; ?>" style="display:none;">
-            <img src="<?php echo htmlspecialchars($event['image_path']); ?>" class="modal-image">
-            <h2 class="modal-title"><?php echo htmlspecialchars($event['title']); ?></h2>
-            <p class="modal-info"><i class="fas fa-calendar"></i> <?php echo date('F j, Y',strtotime($event['start_date'])); ?></p>
-            <p class="modal-info"><i class="fas fa-clock"></i> <?php echo date('g:i A',strtotime($event['start_date'])).' - '.date('g:i A',strtotime($event['end_date'])); ?></p>
-            <p class="modal-info"><i class="fas fa-map-marker-alt"></i> <?php echo htmlspecialchars($event['venue']); ?></p>
-            <p class="modal-info"><i class="fas fa-users"></i> <?php echo $event['attendee_count']; ?> attending</p>
-            <p class="modal-description"><?php echo nl2br(htmlspecialchars($event['description'])); ?></p>
-            <?php if($event['is_registered']): ?>
-                <button class="unregister-btn">Unregister</button>
-            <?php else: ?>
-                <button class="register-btn">Register</button>
-            <?php endif; ?>
         </div>
     <?php endwhile; ?>
 <?php else: ?>
@@ -79,25 +88,34 @@ $stmt->close();
 <?php endif; ?>
 </div>
 
+<!-- Popup Modal -->
 <div id="eventModal" class="modal">
-    <div class="modal-content" id="modalContent">
-        <button class="close-modal" onclick="closeModal()">×</button>
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeModal()">×</button>
+        <img id="modalImage" src="" alt="">
+        <h2 id="modalTitle"></h2>
+        <p id="modalDesc"></p>
+        <p><strong>Venue:</strong> <span id="modalVenue"></span></p>
+        <p><strong>Time:</strong> <span id="modalTime"></span></p>
     </div>
 </div>
 
 <script>
-function openModal(eventId){
-    const eventDetail = document.getElementById('event-detail-'+eventId);
-    if(eventDetail){
-        document.getElementById('modalContent').innerHTML = '<button class="close-modal" onclick="closeModal()">×</button>' + eventDetail.innerHTML;
-        document.getElementById('eventModal').style.display='flex';
-        document.body.style.overflow='hidden';
-    }
+// Auto-hide success message after 3s
+setTimeout(()=>{ const msg=document.getElementById('successMessage'); if(msg) msg.style.display='none'; },3000);
+
+// Modal logic
+function showEventDetails(event) {
+    const modal = document.getElementById('eventModal');
+    document.getElementById('modalTitle').innerText = event.title;
+    document.getElementById('modalDesc').innerText = event.description;
+    document.getElementById('modalVenue').innerText = event.venue;
+    document.getElementById('modalTime').innerText = new Date(event.start_date).toLocaleString();
+    document.getElementById('modalImage').src = event.image_path || '';
+    modal.style.display = 'flex';
 }
-function closeModal(){
-    document.getElementById('eventModal').style.display='none';
-    document.body.style.overflow='auto';
-}
+function closeModal(){ document.getElementById('eventModal').style.display='none'; }
+window.onclick = function(e){ const m=document.getElementById('eventModal'); if(e.target==m){m.style.display='none';} }
 </script>
 
 </body>

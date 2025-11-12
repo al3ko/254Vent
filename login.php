@@ -1,139 +1,77 @@
 <?php
 session_start();
+include('db_connect.php');
+
+$message = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Database connection
-    $conn = mysqli_connect("localhost", "root", "QWE123!@#qwe", "univent", 3307);
-    if (!$conn) {
-        die("Connection failed: " . mysqli_connect_error());
-    }
+    $email = strtolower(trim($_POST['email'])); // lowercase for consistency
+    $password = trim($_POST['password']);
 
-    $email = mysqli_real_escape_string($conn, $_POST["email"]);
-    $password = $_POST["password"];
+    if (!empty($email) && !empty($password)) {
+        // Fetch user info from database
+        $stmt = $conn->prepare("SELECT user_id, email, password, is_admin FROM users WHERE email = ?");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $stmt->store_result();
 
-    // Check if user exists
-    $query = "SELECT * FROM users WHERE email = '$email' LIMIT 1";
-    $result = mysqli_query($conn, $query);
+        if ($stmt->num_rows === 1) {
+            $stmt->bind_result($user_id, $user_email, $hashed_password, $is_admin_db);
+            $stmt->fetch();
 
-    if ($result && mysqli_num_rows($result) === 1) {
-        $user = mysqli_fetch_assoc($result);
+            if (password_verify($password, $hashed_password)) {
+                // Determine if user is admin
+                $isAdmin = ($is_admin_db == 1);
 
-        // Verify password
-        if (password_verify($password, $user['password'])) {
-            // Set session variables
-            $_SESSION["user_id"] = $user["id"];
-            $_SESSION["user_email"] = $user["email"];
-            $_SESSION["is_admin"] = $user["is_admin"]; // Either 0 or 1
+                // Store session info
+                $_SESSION['user_id'] = $user_id;
+                $_SESSION['email'] = $user_email;
+                $_SESSION['is_admin'] = $isAdmin;
 
-            // Redirect based on role
-            if ($user["is_admin"]) {
-                header("Location: admin-homepage.php");
+                // Redirect based on role
+                if ($isAdmin) {
+                    header("Location: adminhomepage.php");
+                } else {
+                    header("Location: homepage.php");
+                }
+                exit;
             } else {
-                header("Location: homepage.php");
+                $message = "Invalid password.";
             }
-            exit();
         } else {
-            $error = "Invalid password.";
+            $message = "No account found with that email.";
         }
-    } else {
-        $error = "No account found with that email.";
-    }
 
-    mysqli_close($conn);
+        $stmt->close();
+    } else {
+        $message = "Please fill in all fields.";
+    }
 }
 ?>
 
-<!-- HTML Login Form -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Login - UniVENT</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f8f8;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        .login-box {
-            background-color: white;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-        }
-
-        .login-box h2 {
-            margin-bottom: 1rem;
-            text-align: center;
-        }
-
-        input[type="email"],
-        input[type="password"] {
-            width: 100%;
-            padding: 0.75rem;
-            margin-bottom: 1rem;
-            border: 1px solid #ccc;
-            border-radius: 6px;
-        }
-
-        input[type="submit"] {
-            background-color: #FFA500;
-            color: white;
-            border: none;
-            padding: 0.75rem;
-            width: 100%;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        input[type="submit"]:hover {
-            background-color: #e69500;
-        }
-
-        .error {
-            color: red;
-            text-align: center;
-            margin-bottom: 1rem;
-        }
-
-        .link {
-            text-align: center;
-            margin-top: 1rem;
-        }
-
-        .link a {
-            color: #3498db;
-            text-decoration: none;
-        }
-
-        .link a:hover {
-            text-decoration: underline;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="login-box">
-        <h2>Login to UniVENT</h2>
+<div class="form-container">
+    <h2>Login</h2>
+    <?php if ($message): ?>
+        <div class="message"><?= htmlspecialchars($message) ?></div>
+    <?php endif; ?>
+    <form method="POST" action="login.php">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email" placeholder="Enter your email" required>
 
-        <?php if (!empty($error)) echo "<div class='error'>$error</div>"; ?>
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Enter your password" required>
 
-        <form method="POST" action="login.php">
-            <input type="email" name="email" placeholder="Email address" required>
-            <input type="password" name="password" placeholder="Password" required>
-            <input type="submit" value="Login">
-        </form>
-
-        <div class="link">
-            <p>Don't have an account? <a href="signup.html">Sign Up</a></p>
-            <p><a href="forgot-password.php">Forgot Password?</a></p>
-        </div>
-    </div>
+        <button type="submit" class="btn">Login</button>
+    </form>
+    <p>Don’t have an account? <a href="signup.php">Sign up here</a></p>
+</div>
 </body>
 </html>
